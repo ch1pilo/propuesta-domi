@@ -59,5 +59,4 @@ Los puntos 1 y 4 son los que más impacto tienen y no dependen de ninguna integr
 
 ## Referencias
 
-- Prototipo interactivo del formulario: https://claude.ai/artifact/1P5vVytbacdgYWtVaMwyei
-- Presentación del problema y la propuesta: https://claude.ai/artifact/6WRpq762rafDb4yNGvzrbu
+- Repositorio con el prototipo, la presentación y este documento: https://github.com/ch1pilo/propuesta-domi
