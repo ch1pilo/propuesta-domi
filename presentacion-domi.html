@@ -1,0 +1,458 @@
+<!doctype html>
+<title>Comanda Confiable</title>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --accent:#29AAE3;
+    --accent-strong:#0B2540;
+    --accent-tint:#E3F4FC;
+    --ink:#0F2233;
+    --ink-soft:#4C6478;
+    --ink-faint:#7C93A3;
+    --bg:#F5FAFD;
+    --surface:#FFFFFF;
+    --surface-alt:#EAF5FB;
+    --border:#D3E6F0;
+    --border-strong:#B7D8E8;
+    --warn:#B85A1E;
+    --warn-bg:#FCEFE3;
+    --warn-border:#F0CBA5;
+    --good:#1E9E76;
+    --good-bg:#E4F6EE;
+    --good-border:#B7E4CE;
+    --shadow:0 1px 2px rgba(11,37,64,.06), 0 16px 40px -18px rgba(11,37,64,.28);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --accent:#5BC4F0; --accent-strong:#EAF6FD; --accent-tint:#153247;
+      --ink:#E8F2F8; --ink-soft:#AFC6D6; --ink-faint:#7E97A8;
+      --bg:#081620; --surface:#0F2534; --surface-alt:#123049;
+      --border:#1E3F55; --border-strong:#2C5570;
+      --warn:#E7A268; --warn-bg:#3A2515; --warn-border:#5C3D22;
+      --good:#7BD8B4; --good-bg:#123829; --good-border:#215C43;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 18px 44px -18px rgba(0,0,0,.65);
+    }
+  }
+  :root[data-theme="dark"]{
+    --accent:#5BC4F0; --accent-strong:#EAF6FD; --accent-tint:#153247;
+    --ink:#E8F2F8; --ink-soft:#AFC6D6; --ink-faint:#7E97A8;
+    --bg:#081620; --surface:#0F2534; --surface-alt:#123049;
+    --border:#1E3F55; --border-strong:#2C5570;
+    --warn:#E7A268; --warn-bg:#3A2515; --warn-border:#5C3D22;
+    --good:#7BD8B4; --good-bg:#123829; --good-border:#215C43;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 18px 44px -18px rgba(0,0,0,.65);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    display:flex; flex-direction:column; overflow:hidden;
+    position:relative;
+  }
+  [hidden]{display:none!important;}
+  h1,h2,h3{text-wrap:balance;margin:0;font-family:"Sora","IBM Plex Sans",sans-serif;}
+  .mono{font-family:"IBM Plex Mono", ui-monospace, monospace;}
+
+  /* ambient background */
+  .bg-glow{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .bg-glow span{
+    position:absolute;border-radius:50%;filter:blur(70px);opacity:.35;
+    background:radial-gradient(circle, var(--accent), transparent 70%);
+  }
+  .bg-glow span.b1{width:520px;height:520px;top:-160px;left:-120px;animation:drift1 26s ease-in-out infinite;}
+  .bg-glow span.b2{width:420px;height:420px;bottom:-140px;right:-100px;background:radial-gradient(circle, var(--good), transparent 70%);animation:drift2 30s ease-in-out infinite;}
+  .bg-glow span.b3{width:300px;height:300px;top:40%;right:12%;background:radial-gradient(circle, var(--warn), transparent 72%);opacity:.18;animation:drift3 22s ease-in-out infinite;}
+  @keyframes drift1{0%,100%{transform:translate(0,0);}50%{transform:translate(40px,50px);}}
+  @keyframes drift2{0%,100%{transform:translate(0,0);}50%{transform:translate(-50px,-30px);}}
+  @keyframes drift3{0%,100%{transform:translate(0,0);}50%{transform:translate(-30px,40px);}}
+  @media (prefers-reduced-motion: reduce){ .bg-glow span{animation:none!important;} }
+
+  /* app bar */
+  .app-bar{
+    position:relative;z-index:2; flex:none;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 22px; gap:12px;
+  }
+  .brand{display:flex;align-items:center;gap:9px;}
+  .brand .mark{
+    font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:12px;letter-spacing:.05em;
+    color:var(--accent-strong);background:var(--accent-tint);border:1px solid var(--accent);
+    border-radius:6px;padding:3px 8px;
+  }
+  .brand .name{font-weight:700;font-size:14px;color:var(--ink-soft);}
+  .app-bar .counter{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-faint);}
+
+  /* deck */
+  .deck{position:relative;flex:1;z-index:1;overflow:hidden;min-height:0;}
+  .slide{
+    position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+    padding:6px 22px; opacity:0; transform:translateY(18px) scale(.99);
+    pointer-events:none; transition:opacity .5s ease, transform .5s ease;
+  }
+  .slide.active{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
+  .slide-inner{max-width:920px;width:100%;margin:0 auto;max-height:100%;overflow-y:auto;padding:10px 2px 18px;}
+
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.09em;color:var(--accent-strong);
+    background:var(--accent-tint);border:1px solid var(--accent);border-radius:999px;
+    padding:4px 11px;margin-bottom:14px;
+  }
+  .eyebrow.warn{color:var(--warn);background:var(--warn-bg);border-color:var(--warn-border);}
+
+  .headline{font-size:clamp(26px,4.4vw,44px);font-weight:800;letter-spacing:-.01em;line-height:1.08;margin-bottom:14px;}
+  .sub{font-size:16px;color:var(--ink-soft);max-width:62ch;line-height:1.55;margin-bottom:6px;}
+
+  /* entrance animation */
+  .anim{opacity:0;transform:translateY(14px);}
+  .slide.active .anim{
+    animation:riseIn .6s cubic-bezier(.2,.7,.2,1) both;
+    animation-delay:calc(var(--d, 0) * 90ms + 60ms);
+  }
+  @keyframes riseIn{to{opacity:1;transform:translateY(0);}}
+  @media (prefers-reduced-motion: reduce){
+    .anim{opacity:1;transform:none;animation:none;}
+  }
+
+  /* cover slide */
+  .cover-wrap{text-align:left;}
+  .cover-badge{margin-bottom:22px;}
+  .cover-badge .mark{font-size:13px;padding:5px 12px;}
+  .cover-title{font-size:clamp(32px,6vw,58px);font-weight:800;line-height:1.03;letter-spacing:-.015em;max-width:14ch;}
+  .cover-title .accentline{color:var(--accent);}
+  .cover-sub{font-size:17px;color:var(--ink-soft);margin-top:16px;max-width:52ch;}
+  .cover-meta{margin-top:34px;display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-faint);font-family:"IBM Plex Mono",monospace;}
+  .cover-meta span{display:flex;align-items:center;gap:6px;}
+  .cover-meta .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);}
+
+
+  /* tree diagram */
+  .tree-scroll{overflow-x:auto;margin-top:8px;}
+  .tree-scroll svg{display:block;min-width:760px;width:100%;height:auto;}
+  .tree-box{fill:var(--surface);stroke:var(--border-strong);stroke-width:1.5;}
+  .tree-trunk{fill:var(--warn-bg);stroke:var(--warn);stroke-width:2;}
+  text.tree-label{fill:var(--ink);font:600 13px "IBM Plex Sans",sans-serif;text-anchor:middle;}
+  text.tree-trunk-label{fill:var(--ink);font:700 14.5px "IBM Plex Sans",sans-serif;text-anchor:middle;}
+  text.tree-section{fill:var(--ink-faint);font:700 11px "IBM Plex Mono",monospace;letter-spacing:.08em;text-anchor:middle;}
+  line.tree-arrow{stroke:var(--ink-faint);stroke-width:1.6;marker-end:url(#arrowhead);}
+  .arrow-fill{fill:var(--ink-faint);}
+  figcaption.tree-caption{margin-top:10px;font-size:13px;color:var(--ink-soft);}
+
+  /* mapping rows */
+  .map-rows{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
+  .map-row{
+    display:grid;grid-template-columns:1fr 28px 1fr;align-items:center;gap:10px;
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);
+  }
+  @media (max-width:640px){ .map-row{grid-template-columns:1fr;} .map-row .arrow-mid{display:none;} }
+  .map-cause, .map-sol{font-size:13.5px;line-height:1.4;border-radius:9px;padding:9px 11px;}
+  .map-cause{background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--ink);}
+  .map-sol{background:var(--good-bg);border:1px solid var(--good-border);color:var(--ink);}
+  .arrow-mid{color:var(--ink-faint);text-align:center;font-size:16px;}
+
+  /* demo slide */
+  .demo-points{display:flex;flex-direction:column;gap:9px;margin:18px 0 22px;}
+  .demo-points li{display:flex;gap:9px;font-size:14.5px;color:var(--ink-soft);list-style:none;}
+  .demo-points li b{color:var(--ink);font-weight:600;}
+  .demo-points .tick{color:var(--good);flex:none;margin-top:2px;}
+  .cta{
+    display:inline-flex;align-items:center;gap:8px;background:var(--accent-strong);color:var(--surface);
+    font-weight:700;font-size:14.5px;padding:12px 18px;border-radius:10px;text-decoration:none;box-shadow:var(--shadow);
+  }
+  .cta-note{font-size:12px;color:var(--ink-faint);margin-top:10px;}
+
+  /* before/after */
+  .ba-note{font-size:12px;color:var(--ink-faint);margin-top:14px;font-style:italic;}
+
+  /* followup slide */
+  .callout{
+    margin-top:18px;background:var(--accent-tint);border:1px solid var(--accent);border-radius:13px;
+    padding:16px 18px;
+  }
+  .callout .ct{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--accent-strong);margin-bottom:7px;}
+  .callout p{margin:0;font-size:14px;color:var(--ink);line-height:1.55;}
+  .status-line{margin-top:14px;font-size:12.5px;color:var(--ink-faint);font-family:"IBM Plex Mono",monospace;}
+
+  /* closing */
+  .steps{list-style:none;margin:20px 0 0;padding:0;display:flex;flex-direction:column;gap:12px;counter-reset:step;}
+  .steps li{display:flex;gap:14px;align-items:flex-start;counter-increment:step;}
+  .steps li::before{
+    content:counter(step);flex:none;width:26px;height:26px;border-radius:50%;
+    background:var(--accent-tint);border:1px solid var(--accent);color:var(--accent-strong);
+    font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:12.5px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .steps li span{font-size:14.5px;color:var(--ink-soft);padding-top:3px;}
+  .thanks{margin-top:26px;font-size:20px;font-weight:700;}
+
+  /* bottom nav */
+  .bottom-nav{
+    position:relative;z-index:2;flex:none;display:flex;align-items:center;justify-content:center;
+    gap:16px;padding:12px 20px calc(14px + env(safe-area-inset-bottom,0px));
+  }
+  .nav-btn{
+    width:38px;height:38px;border-radius:50%;border:1.5px solid var(--border-strong);
+    background:var(--surface);color:var(--ink);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;box-shadow:var(--shadow);
+  }
+  .nav-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .nav-btn:not(:disabled):hover{border-color:var(--accent);color:var(--accent-strong);}
+  .nav-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .dots{display:flex;gap:7px;}
+  .dot-btn{width:7px;height:7px;border-radius:50%;background:var(--border-strong);border:none;padding:0;cursor:pointer;}
+  .dot-btn.on{background:var(--accent);width:20px;border-radius:4px;transition:width .25s,background .25s;}
+  .dot-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+</style>
+
+<div class="bg-glow"><span class="b1"></span><span class="b2"></span><span class="b3"></span></div>
+
+<div class="app-bar">
+  <div class="brand"><span class="mark">DOMI</span><span class="name">Producto &amp; Operaciones</span></div>
+  <span class="counter" id="counter">1 / 8</span>
+</div>
+
+<div class="deck" id="deck">
+
+  <!-- 1. COVER -->
+  <section class="slide">
+    <div class="slide-inner cover-wrap">
+      <div class="anim cover-badge" style="--d:0"><span class="eyebrow">Propuesta de mejora</span></div>
+      <h1 class="anim cover-title" style="--d:1">Que cada comanda<br>llegue bien <span class="accentline">la primera vez</span></h1>
+      <p class="anim cover-sub" style="--d:2">Rediseño del teléfono y la dirección del cliente en la creación de comandas de los aliados — para eliminar los retrasos que hoy nacen ahí.</p>
+      <div class="anim cover-meta" style="--d:3">
+        <span><span class="dot"></span>22 de septiembre, 2026</span>
+        <span><span class="dot"></span>Presentación interna</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. EL PROBLEMA (contexto + arbol fundidos) -->
+  <section class="slide">
+    <div class="slide-inner">
+      <span class="anim eyebrow" style="--d:0">El problema</span>
+      <h2 class="anim headline" style="--d:1;font-size:clamp(24px,3.6vw,36px)">Dos campos deciden si la entrega sale bien</h2>
+      <p class="anim sub" style="--d:2">El aliado escribe el teléfono a mano y a veces copia mal el link de ubicación que el cliente ya envió correctamente — nada lo detecta antes de despachar.</p>
+      <figure class="anim tree-scroll" style="--d:3">
+        <svg viewBox="0 0 1000 580" role="img" aria-label="Árbol del problema: cuatro causas raíz en la creación de la comanda alimentan un problema central de datos poco confiables, que produce cuatro efectos en la operación de entrega.">
+          <defs>
+            <marker id="arrowhead" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" class="arrow-fill"/>
+            </marker>
+          </defs>
+
+          <text x="500" y="18" class="tree-section">EFECTOS EN LA OPERACIÓN</text>
+
+          <!-- effect boxes -->
+          <g>
+            <rect x="50" y="34" width="210" height="62" rx="10" class="tree-box"/>
+            <text class="tree-label" x="155" y="60"><tspan x="155">Domi llega al</tspan><tspan x="155" dy="16">lugar equivocado</tspan></text>
+
+            <rect x="280" y="34" width="210" height="62" rx="10" class="tree-box"/>
+            <text class="tree-label" x="385" y="60"><tspan x="385">Cliente no</tspan><tspan x="385" dy="16">contesta</tspan></text>
+
+            <rect x="510" y="34" width="210" height="62" rx="10" class="tree-box"/>
+            <text class="tree-label" x="615" y="60"><tspan x="615">Retrasos en</tspan><tspan x="615" dy="16">la entrega</tspan></text>
+
+            <rect x="740" y="34" width="210" height="62" rx="10" class="tree-box"/>
+            <text class="tree-label" x="845" y="60"><tspan x="845">Reclamos del</tspan><tspan x="845" dy="16">cliente</tspan></text>
+          </g>
+
+          <!-- trunk -->
+          <rect x="340" y="259" width="320" height="80" rx="12" class="tree-trunk"/>
+          <text class="tree-trunk-label" x="500" y="293"><tspan x="500">Datos de contacto y ubicación</tspan><tspan x="500" dy="17">poco confiables al crear la comanda</tspan></text>
+
+          <!-- trunk -> effects -->
+          <line class="tree-arrow" x1="500" y1="259" x2="155" y2="98"/>
+          <line class="tree-arrow" x1="500" y1="259" x2="385" y2="98"/>
+          <line class="tree-arrow" x1="500" y1="259" x2="615" y2="98"/>
+          <line class="tree-arrow" x1="500" y1="259" x2="845" y2="98"/>
+
+          <!-- causes -> trunk -->
+          <line class="tree-arrow" x1="155" y1="482" x2="500" y2="341"/>
+          <line class="tree-arrow" x1="385" y1="482" x2="500" y2="341"/>
+          <line class="tree-arrow" x1="615" y1="482" x2="500" y2="341"/>
+          <line class="tree-arrow" x1="845" y1="482" x2="500" y2="341"/>
+
+          <!-- cause boxes -->
+          <g>
+            <rect x="50" y="484" width="210" height="62" rx="10" class="tree-box"/>
+            <text class="tree-label" x="155" y="510"><tspan x="155">Teléfono sin</tspan><tspan x="155" dy="16">formato exigido</tspan></text>
+
+            <rect x="280" y="484" width="210" height="62" rx="10" class="tree-box"/>
+            <text class="tree-label" x="385" y="510"><tspan x="385">Se copia mal</tspan><tspan x="385" dy="16">el link de ubicación</tspan></text>
+
+            <rect x="510" y="484" width="210" height="62" rx="10" class="tree-box"/>
+            <text class="tree-label" x="615" y="510"><tspan x="615">Extranjero sin</tspan><tspan x="615" dy="16">respaldo nacional</tspan></text>
+
+            <rect x="740" y="484" width="210" height="62" rx="10" class="tree-box"/>
+            <text class="tree-label" x="845" y="510"><tspan x="845">Sin confirmar</tspan><tspan x="845" dy="16">antes de despachar</tspan></text>
+          </g>
+
+          <text x="500" y="568" class="tree-section">CAUSAS RAÍZ · AL CREAR LA COMANDA</text>
+        </svg>
+        <figcaption class="tree-caption">Cuatro causas en la creación de la comanda alimentan un problema central, que se siente en cuatro puntos distintos de la operación.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 3. MAPEO CAUSA -> SOLUCION -->
+  <section class="slide">
+    <div class="slide-inner">
+      <span class="anim eyebrow" style="--d:0">La propuesta</span>
+      <h2 class="anim headline" style="--d:1">Cada causa tiene una respuesta concreta</h2>
+      <div class="map-rows">
+        <div class="map-row anim" style="--d:2">
+          <div class="map-cause">Teléfono sin formato exigido</div>
+          <div class="arrow-mid">→</div>
+          <div class="map-sol">Operadora + 7 dígitos exactos, validados en tiempo real</div>
+        </div>
+        <div class="map-row anim" style="--d:3">
+          <div class="map-cause">Número sin WhatsApp y sin respaldo</div>
+          <div class="arrow-mid">→</div>
+          <div class="map-sol">Verificación automática + teléfono alterno si no tiene</div>
+        </div>
+        <div class="map-row anim" style="--d:4">
+          <div class="map-cause">Cliente extranjero sin protocolo</div>
+          <div class="arrow-mid">→</div>
+          <div class="map-sol">País + operadora + número, más respaldo nacional obligatorio</div>
+        </div>
+        <div class="map-row anim" style="--d:5">
+          <div class="map-cause">El operador copia mal el link de ubicación</div>
+          <div class="arrow-mid">→</div>
+          <div class="map-sol">Pegar el link tal cual + botón "Ver en mapa" para verificarlo antes de guardar</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. DEMO -->
+  <section class="slide">
+    <div class="slide-inner">
+      <span class="anim eyebrow" style="--d:0">Cómo se ve</span>
+      <h2 class="anim headline" style="--d:1">Ya existe un prototipo funcional</h2>
+      <p class="anim sub" style="--d:2">No es solo una idea en un documento — el formulario completo ya se puede probar.</p>
+      <ul class="demo-points anim" style="--d:3">
+        <li><span class="tick">✓</span><span><b>Bloquea</b> un teléfono con menos o más de 7 dígitos.</span></li>
+        <li><span class="tick">✓</span><span><b>Abre</b> un teléfono alterno automáticamente si el principal no tiene WhatsApp.</span></li>
+        <li><span class="tick">✓</span><span><b>Exige</b> respaldo nacional cuando el cliente es extranjero.</span></li>
+        <li><span class="tick">✓</span><span><b>Muestra</b> de un vistazo qué falta y qué es solo advertencia, antes de crear la comanda.</span></li>
+      </ul>
+      <a class="anim cta" style="--d:4" href="https://claude.ai/artifact/1P5vVytbacdgYWtVaMwyei" target="_blank" rel="noopener">Abrir prototipo interactivo ↗</a>
+      <p class="anim cta-note" style="--d:5">Enlace privado — para mostrarlo a alguien más hay que compartir acceso primero.</p>
+    </div>
+  </section>
+
+  <!-- 5. IMPACTO -->
+  <section class="slide">
+    <div class="slide-inner">
+      <span class="anim eyebrow" style="--d:0">Impacto esperado</span>
+      <h2 class="anim headline" style="--d:1">Qué gana la operación</h2>
+      <ul class="demo-points anim" style="--d:2">
+        <li><span class="tick">✓</span><span>Cero comandas con teléfono incompleto.</span></li>
+        <li><span class="tick">✓</span><span>El domi navega al pin del cliente, no a una dirección escrita a mano.</span></li>
+        <li><span class="tick">✓</span><span>Siempre hay un teléfono de respaldo listo — no se improvisa si no contestan.</span></li>
+        <li><span class="tick">✓</span><span>La dirección se confirma antes de despachar, no después de un reclamo.</span></li>
+      </ul>
+      <p class="anim ba-note" style="--d:3">Cualitativo por ahora — se puede completar con datos reales de retrasos si están disponibles.</p>
+    </div>
+  </section>
+
+  <!-- 6. SEGUIMIENTO A DOMIS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <span class="anim eyebrow warn" style="--d:0">Próximo tema · en evaluación</span>
+      <h2 class="anim headline" style="--d:1">Escalar el seguimiento a domis, sin perder el criterio</h2>
+      <p class="anim sub" style="--d:2">En horas de alta demanda, dar seguimiento manual y personalizado a cada domi no siempre alcanza — quedan casos sin resolver. Se está evaluando una acción de <b>llamado de atención</b>, con mensajes predefinibles, de envío masivo pero dirigido al chat privado de cada domi.</p>
+      <div class="anim callout" style="--d:3">
+        <div class="ct">Lo que no cambia</div>
+        <p>La herramienta envía el mensaje. Decidir <b>a quién</b>, <b>cuándo</b> y <b>cómo</b> escalar sigue siendo criterio humano — esto libera tiempo para los casos que sí necesitan atención personal, no reemplaza el seguimiento.</p>
+      </div>
+      <p class="anim status-line" style="--d:4">ESTADO: EN EVALUACIÓN — SE DEFINE EN UNA PRÓXIMA ITERACIÓN</p>
+    </div>
+  </section>
+
+  <!-- 7. CIERRE -->
+  <section class="slide">
+    <div class="slide-inner">
+      <span class="anim eyebrow" style="--d:0">Próximos pasos</span>
+      <h2 class="anim headline" style="--d:1">¿Cómo seguimos?</h2>
+      <ol class="steps anim" style="--d:2">
+        <li><span>Validar esta propuesta y su prioridad con el equipo.</span></li>
+        <li><span>Definir alcance de fase 1 (validación de teléfono y dirección) frente a fase 2 (verificación de WhatsApp, seguimiento a domis).</span></li>
+        <li><span>Coordinar con desarrollo la implementación del formulario.</span></li>
+        <li><span>Revisar las plantillas y el flujo de seguimiento a domis.</span></li>
+      </ol>
+      <p class="anim thanks" style="--d:3">Gracias.</p>
+    </div>
+  </section>
+
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-btn" id="prevBtn" aria-label="Diapositiva anterior">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <div class="dots" id="dots"></div>
+  <button class="nav-btn" id="nextBtn" aria-label="Siguiente diapositiva">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg>
+  </button>
+</div>
+
+<script>
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const dotsWrap = document.getElementById('dots');
+  const counter = document.getElementById('counter');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  let idx = 0;
+
+  slides.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.className = 'dot-btn';
+    b.setAttribute('aria-label', 'Ir a la diapositiva ' + (i+1));
+    b.addEventListener('click', () => goTo(i));
+    dotsWrap.appendChild(b);
+  });
+  const dotEls = Array.from(dotsWrap.children);
+
+  function render(){
+    slides.forEach((s,i) => s.classList.toggle('active', i === idx));
+    dotEls.forEach((d,i) => d.classList.toggle('on', i === idx));
+    counter.textContent = (idx+1) + ' / ' + slides.length;
+    prevBtn.disabled = idx === 0;
+    nextBtn.disabled = idx === slides.length - 1;
+  }
+  function goTo(i){
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    render();
+  }
+  function next(){ goTo(idx + 1); }
+  function prev(){ goTo(idx - 1); }
+
+  prevBtn.addEventListener('click', prev);
+  nextBtn.addEventListener('click', next);
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { next(); }
+    else if (e.key === 'ArrowLeft') { prev(); }
+    else if (e.key === 'Home') { goTo(0); }
+    else if (e.key === 'End') { goTo(slides.length - 1); }
+  });
+
+  let touchX = null;
+  document.getElementById('deck').addEventListener('touchstart', (e) => { touchX = e.touches[0].clientX; }, {passive:true});
+  document.getElementById('deck').addEventListener('touchend', (e) => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) { dx < 0 ? next() : prev(); }
+    touchX = null;
+  }, {passive:true});
+
+  render();
+})();
+</script>

@@ -1,0 +1,691 @@
+<!doctype html>
+<title>Consola de Comanda</title>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F6F2;
+    --surface:#FFFFFF;
+    --surface-alt:#EDEFEA;
+    --ink:#16211F;
+    --ink-soft:#4B5954;
+    --ink-faint:#7C8A83;
+    --border:#D7DCD3;
+    --border-strong:#B9C2BB;
+    --accent:#0F6B63;
+    --accent-strong:#0B4F49;
+    --accent-bg:#E4F0EE;
+    --warn:#95530F;
+    --warn-bg:#FBEEDD;
+    --warn-border:#E7C393;
+    --danger:#A6362D;
+    --danger-bg:#FBEAE8;
+    --danger-border:#E7B3AE;
+    --success:#256B45;
+    --success-bg:#E8F3EC;
+    --success-border:#B6D9C4;
+    --focus:#0F6B63;
+    --shadow: 0 1px 2px rgba(20,30,27,.06), 0 8px 24px -12px rgba(20,30,27,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1E1B;
+      --surface:#15302A;
+      --surface-alt:#1B3831;
+      --ink:#EAF2EE;
+      --ink-soft:#AFC2BA;
+      --ink-faint:#7F9690;
+      --border:#2B4A41;
+      --border-strong:#3B5F55;
+      --accent:#57D6C0;
+      --accent-strong:#8CEADB;
+      --accent-bg:#173F38;
+      --warn:#E7B074;
+      --warn-bg:#3B2A15;
+      --warn-border:#5C4522;
+      --danger:#E8918A;
+      --danger-bg:#3B1F1D;
+      --danger-border:#5A2E2B;
+      --success:#8FD3A9;
+      --success-bg:#173226;
+      --success-border:#2C5240;
+      --focus:#57D6C0;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px -12px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1E1B;
+    --surface:#15302A;
+    --surface-alt:#1B3831;
+    --ink:#EAF2EE;
+    --ink-soft:#AFC2BA;
+    --ink-faint:#7F9690;
+    --border:#2B4A41;
+    --border-strong:#3B5F55;
+    --accent:#57D6C0;
+    --accent-strong:#8CEADB;
+    --accent-bg:#173F38;
+    --warn:#E7B074;
+    --warn-bg:#3B2A15;
+    --warn-border:#5C4522;
+    --danger:#E8918A;
+    --danger-bg:#3B1F1D;
+    --danger-border:#5A2E2B;
+    --success:#8FD3A9;
+    --success-bg:#173226;
+    --success-border:#2C5240;
+    --focus:#57D6C0;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px -12px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size:15px;
+    line-height:1.5;
+    padding-inline:20px;
+    padding-block:28px;
+  }
+  h1,h2,h3{text-wrap:balance;}
+  .mono{font-family:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace; font-variant-numeric:tabular-nums;}
+  [hidden]{display:none!important;}
+
+  .wrap{max-width:1040px;margin:0 auto;}
+
+  .topbar{
+    display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    margin-bottom:6px;
+  }
+  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand .mark{
+    font-family:"IBM Plex Mono", monospace; font-weight:600; font-size:13px;
+    color:var(--accent-strong); background:var(--accent-bg);
+    border:1px solid var(--accent); border-radius:6px; padding:3px 8px; letter-spacing:.04em;
+  }
+  h1{font-size:22px;font-weight:800;margin:0;letter-spacing:-.01em;}
+  .meta{color:var(--ink-faint);font-size:12.5px;font-family:"IBM Plex Mono",monospace;}
+
+  .subtitle{color:var(--ink-soft);font-size:14px;margin:4px 0 18px;}
+
+  .banner{
+    display:flex; gap:10px; align-items:flex-start;
+    background:var(--accent-bg); border:1px solid var(--accent); color:var(--accent-strong);
+    border-radius:10px; padding:11px 14px; font-size:13px; margin-bottom:22px;
+  }
+  .banner b{color:inherit;}
+  .banner svg{flex:none;margin-top:1px;}
+
+  .layout{
+    display:grid; grid-template-columns:1.55fr 1fr; gap:20px; align-items:start;
+  }
+  @media (max-width:760px){ .layout{grid-template-columns:1fr;} }
+
+  .panel{
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    padding:20px 22px; box-shadow:var(--shadow);
+  }
+  .panel + .panel{margin-top:18px;}
+
+  .panel h2{
+    font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--ink-faint); margin:0 0 3px;
+  }
+  .panel .lead{font-size:13.5px;color:var(--ink-soft);margin:0 0 16px;}
+
+  .field{margin-bottom:16px;}
+  .field:last-child{margin-bottom:0;}
+  label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--ink);}
+  .hint{font-size:12px;color:var(--ink-faint);margin-top:5px;}
+  .hint.err{color:var(--danger);}
+  .hint.ok{color:var(--success);}
+  .hint.warn{color:var(--warn);}
+
+  input[type=text], input[type=tel], select, textarea{
+    width:100%; font:inherit; font-size:14.5px; color:var(--ink);
+    background:var(--surface-alt); border:1.5px solid var(--border-strong); border-radius:9px;
+    padding:10px 12px; transition:border-color .12s, background .12s;
+  }
+  textarea{resize:vertical;min-height:64px;font-family:inherit;}
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible{
+    outline:2px solid var(--focus); outline-offset:2px;
+  }
+  input.invalid, select.invalid{border-color:var(--danger); background:var(--danger-bg);}
+  input.valid{border-color:var(--success); background:var(--success-bg);}
+
+  .phone-row{display:grid; grid-template-columns:118px 1fr; gap:10px;}
+  @media (max-width:420px){ .phone-row{grid-template-columns:1fr;} }
+
+  .row-inline{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+
+  .switch-row{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--surface-alt); border:1px solid var(--border); border-radius:10px;
+    padding:11px 13px; margin-bottom:16px;
+  }
+  .switch-row .txt{font-size:13.5px;}
+  .switch-row .txt b{display:block;font-size:13.5px;}
+  .switch-row .txt span{color:var(--ink-faint);font-size:12px;}
+  .switch{position:relative;width:40px;height:23px;flex:none;}
+  .switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;}
+  .switch .track{
+    position:absolute;inset:0;background:var(--border-strong);border-radius:999px;transition:background .15s;
+  }
+  .switch .knob{
+    position:absolute;top:2.5px;left:2.5px;width:18px;height:18px;border-radius:50%;
+    background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .15s;
+  }
+  .switch input:checked + .track{background:var(--accent);}
+  .switch input:checked + .track + .knob{transform:translateX(17px);}
+
+  .foreign-block{
+    border-left:3px solid var(--accent); padding-left:14px; margin-top:4px; margin-bottom:16px;
+    display:flex; flex-direction:column; gap:14px;
+  }
+  .foreign-grid{display:grid; grid-template-columns:1fr 96px 1fr; gap:10px;}
+  @media (max-width:520px){ .foreign-grid{grid-template-columns:1fr;} }
+
+  .backup-note{
+    display:flex; gap:8px; font-size:12.5px; color:var(--warn); background:var(--warn-bg);
+    border:1px solid var(--warn-border); border-radius:8px; padding:9px 11px;
+  }
+  .backup-note svg{flex:none;margin-top:1px;}
+
+  button{font:inherit;cursor:pointer;}
+  .btn{
+    display:inline-flex;align-items:center;gap:7px; font-size:13.5px; font-weight:600;
+    border-radius:8px; padding:8px 13px; border:1.5px solid var(--border-strong);
+    background:var(--surface); color:var(--ink);
+  }
+  .btn:hover{border-color:var(--accent);}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface);}
+  .btn.primary:hover{background:var(--accent-strong);border-color:var(--accent-strong);}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--accent);padding-left:4px;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .btn svg{flex:none;}
+  .spin{animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @media (prefers-reduced-motion: reduce){ .spin{animation:none;} }
+
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+    border-radius:999px;padding:4px 10px;border:1px solid var(--border-strong);color:var(--ink-soft);
+    background:var(--surface-alt);
+  }
+  .chip.ok{background:var(--success-bg);border-color:var(--success-border);color:var(--success);}
+  .chip.warn{background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn);}
+  .chip.err{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger);}
+  .chip.pending{background:var(--accent-bg);border-color:var(--accent);color:var(--accent-strong);}
+
+  .demo-controls{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+  .demo-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);margin:12px 0 6px;}
+
+  /* status rail */
+  .status-panel{position:sticky; top:16px;}
+  .status-item{
+    display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--border);
+  }
+  .status-item:last-child{border-bottom:none;padding-bottom:0;}
+  .status-item:first-child{padding-top:0;}
+  .status-item .ic{
+    width:22px;height:22px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+    background:var(--surface-alt);border:1px solid var(--border-strong);margin-top:1px;
+  }
+  .status-item.ok .ic{background:var(--success-bg);border-color:var(--success-border);color:var(--success);}
+  .status-item.warn .ic{background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn);}
+  .status-item.err .ic{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger);}
+  .status-item.pending .ic{background:var(--accent-bg);border-color:var(--accent);color:var(--accent-strong);}
+  .status-item .txt b{display:block;font-size:13px;}
+  .status-item .txt span{font-size:12px;color:var(--ink-faint);}
+
+  .submit-block{margin-top:16px;padding-top:16px;border-top:1px solid var(--border);}
+  .submit-block .warn-line{
+    display:flex;gap:8px;font-size:12.5px;color:var(--warn);background:var(--warn-bg);
+    border:1px solid var(--warn-border);border-radius:8px;padding:9px 11px;margin-bottom:12px;
+  }
+  .submit-block .wait-line{
+    display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--accent-strong);background:var(--accent-bg);
+    border:1px solid var(--accent);border-radius:8px;padding:9px 11px;margin-bottom:12px;
+  }
+  .submit-btn{width:100%;justify-content:center;font-size:14.5px;padding:12px;}
+
+  .foot-note{color:var(--ink-faint);font-size:11.5px;margin-top:18px;text-align:center;}
+</style>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="mark">DOMI · OPS</span>
+      <h1>Consola de Comanda</h1>
+    </div>
+    <span class="meta">comanda #A-10432</span>
+  </div>
+  <p class="subtitle">Nueva comanda para un aliado &middot; datos del cliente final</p>
+
+  <div class="banner">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+    <div><b>Prototipo interactivo.</b> La verificación de WhatsApp y la confirmación de dirección están simuladas para esta demostración — no se envían mensajes reales.</div>
+  </div>
+
+  <div class="layout">
+    <!-- MAIN FORM -->
+    <div>
+      <form id="form" novalidate>
+
+        <div class="panel">
+          <h2>Contacto del cliente</h2>
+          <p class="lead">Teléfono del cliente final que recibirá la comanda.</p>
+
+          <div class="switch-row">
+            <div class="txt">
+              <b>Cliente en el extranjero</b>
+              <span>El número principal no es venezolano</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="foreignToggle">
+              <span class="track"></span><span class="knob"></span>
+            </label>
+          </div>
+
+          <!-- Domestic phone -->
+          <div id="domesticBlock">
+            <div class="field">
+              <label for="opCode">Teléfono principal</label>
+              <div class="phone-row">
+                <select id="opCode" class="mono">
+                  <option value="0412">0412</option>
+                  <option value="0414">0414</option>
+                  <option value="0416">0416</option>
+                  <option value="0422">0422</option>
+                  <option value="0424" selected>0424</option>
+                  <option value="0426">0426</option>
+                </select>
+                <input type="tel" id="phoneDigits" class="mono" inputmode="numeric" maxlength="7" placeholder="1234567" value="8817203">
+              </div>
+              <p class="hint" id="phoneHint">Exactamente 7 dígitos, sin espacios.</p>
+            </div>
+
+            <div class="row-inline">
+              <button type="button" class="btn" id="waBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.4A10 10 0 1 0 12 2Zm5.6 14.3c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-3.3-.7-2.8-1.1-4.6-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.8 0-1.3.7-2 1-2.2.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5.2.6.7 1.9.8 2 .1.2.1.4 0 .6-.6 1.2-1.2.9-.6 1.9.9 1.4 1.7 1.9 3 2.5.2.1.4.1.5-.1.2-.2.7-.8.9-1.1.2-.3.4-.2.6-.1l1.9.9c.2.1.4.2.4.4.1.2.1.9-.1 1.4Z"/></svg>
+                Verificar WhatsApp
+              </button>
+              <span class="chip" id="waChip">Sin verificar</span>
+            </div>
+
+            <div class="field" id="backupBlock" hidden style="margin-top:14px;">
+              <label for="opCodeBackup">Teléfono alterno <span style="font-weight:400;color:var(--ink-faint);">— el principal no tiene WhatsApp</span></label>
+              <div class="phone-row">
+                <select id="opCodeBackup" class="mono">
+                  <option value="0412">0412</option>
+                  <option value="0414">0414</option>
+                  <option value="0416">0416</option>
+                  <option value="0422">0422</option>
+                  <option value="0424">0424</option>
+                  <option value="0426" selected>0426</option>
+                </select>
+                <input type="tel" id="phoneDigitsBackup" class="mono" inputmode="numeric" maxlength="7" placeholder="1234567">
+              </div>
+              <p class="hint" id="backupHint">Exactamente 7 dígitos, sin espacios.</p>
+            </div>
+          </div>
+
+          <!-- Foreign phone -->
+          <div id="foreignBlock" class="foreign-block" hidden>
+            <div class="field" style="margin-bottom:0;">
+              <label for="country">País del número principal</label>
+              <select id="country">
+                <option value="+57" data-name="Colombia">Colombia (+57)</option>
+                <option value="+34" data-name="España">España (+34)</option>
+                <option value="+1" data-name="Estados Unidos">Estados Unidos (+1)</option>
+                <option value="+51" data-name="Perú">Perú (+51)</option>
+                <option value="+56" data-name="Chile">Chile (+56)</option>
+                <option value="+52" data-name="México">México (+52)</option>
+                <option value="otro" data-name="Otro">Otro (código manual)</option>
+              </select>
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label>Número extranjero completo</label>
+              <div class="foreign-grid">
+                <input type="text" id="countryCodeManual" class="mono" value="+57" placeholder="+cod.">
+                <input type="text" id="foreignPrefix" class="mono" placeholder="opera." maxlength="4" value="300">
+                <input type="text" id="foreignNumber" class="mono" placeholder="número" value="5551234">
+              </div>
+              <p class="hint">Código de país, código de operadora y número local del país de origen.</p>
+            </div>
+
+            <div class="backup-note">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9 1.9 18a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L14.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>
+              <div>Los números extranjeros pueden no tener datos/internet locales. Por eso se exige un teléfono <b>nacional</b> de respaldo para que el domi pueda llamar si WhatsApp no responde.</div>
+            </div>
+
+            <div class="field" style="margin-bottom:0;">
+              <label for="opCodeNational">Teléfono nacional de respaldo <span style="color:var(--danger);">*</span></label>
+              <div class="phone-row">
+                <select id="opCodeNational" class="mono">
+                  <option value="0412">0412</option>
+                  <option value="0414" selected>0414</option>
+                  <option value="0416">0416</option>
+                  <option value="0422">0422</option>
+                  <option value="0424">0424</option>
+                  <option value="0426">0426</option>
+                </select>
+                <input type="tel" id="phoneDigitsNational" class="mono" inputmode="numeric" maxlength="7" placeholder="1234567">
+              </div>
+              <p class="hint" id="nationalHint">Obligatorio para clientes en el extranjero. Exactamente 7 dígitos.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Dirección de entrega</h2>
+          <p class="lead">El cliente ya envía su ubicación correcta por WhatsApp — este campo evita que se pierda o se cambie al copiarla. Verifícala con "Ver en mapa" antes de guardar.</p>
+
+          <div class="field">
+            <label for="locationLink">Link de ubicación (WhatsApp) <span style="color:var(--danger);">*</span></label>
+            <div class="row-inline" style="gap:8px;">
+              <input type="text" id="locationLink" class="mono" style="flex:1;min-width:0;" placeholder="https://maps.google.com/?q=10.4966,-66.8536" value="https://maps.google.com/?q=10.4966,-66.8536">
+              <a href="#" id="openMapLink" target="_blank" rel="noopener" class="btn" style="text-decoration:none;">
+                Ver en mapa ↗
+              </a>
+            </div>
+            <p class="hint" id="linkHint">Pega el link que el cliente comparte al enviar "Ubicación actual" por WhatsApp.</p>
+          </div>
+
+          <div class="field">
+            <label for="address">Referencia adicional <span style="font-weight:400;color:var(--ink-faint);">— opcional</span></label>
+            <textarea id="address" placeholder="Torre, piso, apartamento, punto de referencia…">Torre B, piso 4, apto 4-C — portón negro, al lado de la panadería</textarea>
+            <p class="hint">Ayuda al domi cuando el pin del mapa no basta (edificios, urbanizaciones cerradas).</p>
+          </div>
+
+          <p class="hint">Al crear la comanda, se le reenvía este mismo link al cliente por WhatsApp para que confirme que es su ubicación correcta — es exactamente lo que quedó pegado arriba.</p>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- STATUS RAIL -->
+    <div class="status-panel">
+      <div class="panel">
+        <h2>Estado de la comanda</h2>
+        <p class="lead">Lo que ve el operador antes de despachar</p>
+
+        <div id="statusList">
+          <div class="status-item pending" id="stPhone">
+            <span class="ic">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
+            </span>
+            <div class="txt"><b>Teléfono principal</b><span id="stPhoneSub">Formato pendiente de validar</span></div>
+          </div>
+          <div class="status-item pending" id="stWa">
+            <span class="ic">?</span>
+            <div class="txt"><b>WhatsApp</b><span id="stWaSub">Sin verificar</span></div>
+          </div>
+          <div class="status-item pending" id="stBackup" hidden>
+            <span class="ic">?</span>
+            <div class="txt"><b>Teléfono de respaldo</b><span id="stBackupSub">Requerido — no ingresado</span></div>
+          </div>
+          <div class="status-item pending" id="stLink">
+            <span class="ic">?</span>
+            <div class="txt"><b>Link de ubicación</b><span id="stLinkSub">Sin pegar</span></div>
+          </div>
+          <div class="status-item pending" id="stAddr">
+            <span class="ic">?</span>
+            <div class="txt"><b>Confirmación con cliente</b><span id="stAddrSub">Sin confirmar</span></div>
+          </div>
+        </div>
+
+        <div class="submit-block">
+          <div class="wait-line" id="waitLine" hidden></div>
+          <div class="warn-line" id="submitWarn" hidden></div>
+          <button type="submit" form="form" class="btn primary submit-btn" id="submitBtn" disabled>Crear comanda</button>
+          <div class="demo-controls" id="addrDemo" hidden style="justify-content:center;margin-top:10px;">
+            <button type="button" class="btn ghost" id="simConfirm">▸ demo: cliente confirma</button>
+            <button type="button" class="btn ghost" id="simTimeout">▸ demo: saltar espera</button>
+          </div>
+        </div>
+      </div>
+      <p class="foot-note">Los campos obligatorios bloquean el envío. Al crear la comanda se envía la confirmación al cliente: si responde, se crea al instante; si no, se crea igual a los 2–3 minutos con advertencia.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+
+  const opCode = $('opCode'), phoneDigits = $('phoneDigits'), phoneHint = $('phoneHint');
+  const waBtn = $('waBtn'), waChip = $('waChip');
+  const backupBlock = $('backupBlock'), opCodeBackup = $('opCodeBackup'), phoneDigitsBackup = $('phoneDigitsBackup'), backupHint = $('backupHint');
+
+  const foreignToggle = $('foreignToggle'), domesticBlock = $('domesticBlock'), foreignBlock = $('foreignBlock');
+  const opCodeNational = $('opCodeNational'), phoneDigitsNational = $('phoneDigitsNational'), nationalHint = $('nationalHint');
+
+  const locationLink = $('locationLink'), linkHint = $('linkHint'), openMapLink = $('openMapLink');
+  const address = $('address'), addrDemo = $('addrDemo');
+  const simConfirm = $('simConfirm'), simTimeout = $('simTimeout');
+
+  const submitBtn = $('submitBtn'), submitWarn = $('submitWarn'), waitLine = $('waitLine');
+  const CONFIRM_WINDOW = 12; // segundos — representa, comprimidos para la demo, los 2–3 minutos reales
+  let addrTimer = null, addrCountdown = 0;
+
+  let waState = 'unverified'; // unverified | checking | has | none
+  let addrState = 'unsent'; // unsent | pending | confirmed | timeout
+  let backupRequired = false;
+
+  function onlyDigits(el, max){
+    el.value = el.value.replace(/\D/g,'').slice(0, max);
+  }
+
+  function validatePhoneField(input, hintEl, label){
+    onlyDigits(input, 7);
+    const len = input.value.length;
+    if (len === 0){
+      input.classList.remove('valid','invalid');
+      hintEl.textContent = 'Exactamente 7 dígitos, sin espacios.';
+      hintEl.className = 'hint';
+      return false;
+    }
+    if (len !== 7){
+      input.classList.add('invalid'); input.classList.remove('valid');
+      hintEl.textContent = `Faltan ${7-len} dígito(s) — deben ser exactamente 7.`;
+      hintEl.className = 'hint err';
+      return false;
+    }
+    input.classList.add('valid'); input.classList.remove('invalid');
+    hintEl.textContent = `${label} válido.`;
+    hintEl.className = 'hint ok';
+    return true;
+  }
+
+  function refreshStatus(){
+    const mainOk = validatePhoneField(phoneDigits, phoneHint, 'Formato del número');
+    const stPhone = $('stPhone'), stPhoneSub = $('stPhoneSub');
+    stPhone.className = 'status-item ' + (mainOk ? 'ok' : 'err');
+    stPhone.querySelector('.ic').innerHTML = mainOk
+      ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>'
+      : '!';
+    stPhoneSub.textContent = mainOk ? (opCode.value + phoneDigits.value) : 'Debe tener exactamente 7 dígitos';
+
+    // WhatsApp status
+    const stWa = $('stWa'), stWaSub = $('stWaSub');
+    if (waState === 'unverified'){ stWa.className='status-item pending'; stWa.querySelector('.ic').textContent='?'; stWaSub.textContent='Sin verificar'; }
+    else if (waState === 'checking'){ stWa.className='status-item pending'; stWa.querySelector('.ic').textContent='…'; stWaSub.textContent='Verificando…'; }
+    else if (waState === 'has'){ stWa.className='status-item ok'; stWa.querySelector('.ic').innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>'; stWaSub.textContent='Tiene WhatsApp'; }
+    else if (waState === 'none'){ stWa.className='status-item warn'; stWa.querySelector('.ic').textContent='!'; stWaSub.textContent='No tiene — se pidió alterno'; }
+
+    // Backup phone (no-whatsapp path)
+    const stBackup = $('stBackup'), stBackupSub = $('stBackupSub');
+    let backupOk = true;
+    if (waState === 'none'){
+      stBackup.hidden = false;
+      backupOk = validatePhoneField(phoneDigitsBackup, backupHint, 'Teléfono alterno');
+      stBackup.className = 'status-item ' + (backupOk ? 'ok' : 'err');
+      stBackup.querySelector('.ic').innerHTML = backupOk ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>' : '!';
+      stBackupSub.textContent = backupOk ? (opCodeBackup.value + phoneDigitsBackup.value) : 'Requerido — 7 dígitos';
+    } else {
+      stBackup.hidden = true;
+    }
+
+    // Foreign national backup
+    let nationalOk = true;
+    if (foreignToggle.checked){
+      nationalOk = validatePhoneField(phoneDigitsNational, nationalHint, 'Teléfono nacional de respaldo');
+    }
+
+    // Location link (primary source of truth)
+    const stLink = $('stLink'), stLinkSub = $('stLinkSub');
+    const linkVal = locationLink.value.trim();
+    const linkOk = /^https?:\/\/\S+\.\S+/.test(linkVal);
+    if (linkVal.length === 0){
+      locationLink.classList.remove('valid','invalid');
+      linkHint.textContent = 'Pega el link que el cliente comparte al enviar "Ubicación actual" por WhatsApp.';
+      linkHint.className = 'hint';
+      stLink.className = 'status-item err'; stLink.querySelector('.ic').textContent='!'; stLinkSub.textContent='Obligatorio — falta pegar el link';
+      openMapLink.style.pointerEvents = 'none'; openMapLink.style.opacity = '.5';
+    } else if (!linkOk){
+      locationLink.classList.add('invalid'); locationLink.classList.remove('valid');
+      linkHint.textContent = 'Eso no parece un link válido (debe empezar con http:// o https://).';
+      linkHint.className = 'hint err';
+      stLink.className = 'status-item err'; stLink.querySelector('.ic').textContent='!'; stLinkSub.textContent='Link con formato inválido';
+      openMapLink.style.pointerEvents = 'none'; openMapLink.style.opacity = '.5';
+    } else {
+      locationLink.classList.add('valid'); locationLink.classList.remove('invalid');
+      linkHint.textContent = 'Link recibido.';
+      linkHint.className = 'hint ok';
+      stLink.className = 'status-item ok'; stLink.querySelector('.ic').innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>'; stLinkSub.textContent='Pegado y con formato válido';
+      openMapLink.style.pointerEvents = 'auto'; openMapLink.style.opacity = '1';
+      openMapLink.href = linkVal;
+    }
+
+    // Confirmation with client (address panel, secondary safety net)
+    const stAddr = $('stAddr'), stAddrSub = $('stAddrSub');
+    if (addrState==='unsent'){
+      stAddr.className='status-item pending'; stAddr.querySelector('.ic').textContent='?'; stAddrSub.textContent='Sin confirmar';
+    } else if (addrState==='pending'){
+      stAddr.className='status-item pending'; stAddr.querySelector('.ic').textContent='…'; stAddrSub.textContent='Esperando respuesta del cliente';
+    } else if (addrState==='confirmed'){
+      stAddr.className='status-item ok'; stAddr.querySelector('.ic').innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>'; stAddrSub.textContent='Confirmada por el cliente';
+    } else if (addrState==='timeout'){
+      stAddr.className='status-item warn'; stAddr.querySelector('.ic').textContent='!'; stAddrSub.textContent='No confirmada — despachar con precaución';
+    }
+
+    // Submit gating: hard-required fields block; while esperando confirmación, el botón queda bloqueado temporalmente.
+    const requiredOk = mainOk && backupOk && nationalOk && linkOk;
+    if (addrState !== 'pending'){
+      submitBtn.disabled = !requiredOk;
+    }
+
+    const warnings = [];
+    if (waState === 'unverified' || waState === 'checking') warnings.push('WhatsApp sin verificar');
+    if (requiredOk && addrState !== 'pending' && submitBtn.textContent.indexOf('creada') === -1 && warnings.length){
+      submitWarn.hidden = false;
+      submitWarn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:none;margin-top:1px;"><path d="M10.3 3.9 1.9 18a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L14.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg><div>Se puede crear la comanda, pero se despachará con: ' + warnings.join(' y ') + '.</div>';
+    } else if (submitBtn.textContent.indexOf('creada') === -1) {
+      submitWarn.hidden = true;
+    }
+  }
+
+  function startAddressWait(){
+    addrState = 'pending';
+    addrCountdown = CONFIRM_WINDOW;
+    addrDemo.hidden = false;
+    tickWait();
+    refreshStatus();
+    addrTimer = setInterval(() => {
+      addrCountdown--;
+      if (addrCountdown <= 0){
+        clearInterval(addrTimer); addrTimer = null;
+        resolveAddress('timeout');
+      } else {
+        tickWait();
+      }
+    }, 1000);
+  }
+
+  function tickWait(){
+    waitLine.hidden = false;
+    waitLine.innerHTML = '<svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex:none;margin-top:1px;"><path d="M12 2a10 10 0 0 1 10 10"/></svg><div>Esperando confirmación del cliente — se crea de todos modos en ' + addrCountdown + 's <span style="opacity:.65">(demo comprimida; en producción, 2–3 min)</span></div>';
+  }
+
+  function resolveAddress(result){
+    if (addrTimer){ clearInterval(addrTimer); addrTimer = null; }
+    addrState = result; // 'confirmed' | 'timeout'
+    addrDemo.hidden = true;
+    waitLine.hidden = true;
+    finalizeCreate();
+  }
+
+  function finalizeCreate(){
+    submitBtn.textContent = '✓ Comanda creada';
+    submitBtn.disabled = true;
+    if (addrState === 'timeout'){
+      submitWarn.hidden = false;
+      submitWarn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:none;margin-top:1px;"><path d="M10.3 3.9 1.9 18a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L14.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg><div><b>El domi salió sin confirmar la ubicación.</b> Por favor, estar atento.</div>';
+    } else {
+      submitWarn.hidden = true;
+    }
+    refreshStatus();
+  }
+
+  // Phone input listeners
+  phoneDigits.addEventListener('input', () => { waState='unverified'; waChip.className='chip'; waChip.textContent='Sin verificar'; backupBlock.hidden = true; refreshStatus(); });
+  phoneDigitsBackup.addEventListener('input', refreshStatus);
+  phoneDigitsNational.addEventListener('input', refreshStatus);
+  opCode.addEventListener('change', refreshStatus);
+  opCodeBackup.addEventListener('change', refreshStatus);
+  opCodeNational.addEventListener('change', refreshStatus);
+  address.addEventListener('input', refreshStatus);
+  locationLink.addEventListener('input', refreshStatus);
+
+  // Foreign toggle
+  foreignToggle.addEventListener('change', () => {
+    const on = foreignToggle.checked;
+    domesticBlock.hidden = on;
+    foreignBlock.hidden = !on;
+    refreshStatus();
+  });
+
+  // WhatsApp simulated check
+  waBtn.addEventListener('click', () => {
+    if (phoneDigits.value.length !== 7){ validatePhoneField(phoneDigits, phoneHint, 'Formato del número'); return; }
+    waState = 'checking';
+    waChip.className = 'chip pending';
+    waChip.innerHTML = '<svg class="spin" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2a10 10 0 0 1 10 10"/></svg> Verificando…';
+    refreshStatus();
+    waBtn.disabled = true;
+    setTimeout(() => {
+      // deterministic demo rule: digit sum divisible by 3 => sin WhatsApp
+      const sum = phoneDigits.value.split('').reduce((a,d)=>a+ +d, 0);
+      const has = sum % 3 !== 0;
+      waState = has ? 'has' : 'none';
+      waChip.className = 'chip ' + (has ? 'ok' : 'warn');
+      waChip.textContent = has ? 'Tiene WhatsApp' : 'No tiene WhatsApp';
+      backupBlock.hidden = has;
+      waBtn.disabled = false;
+      refreshStatus();
+    }, 900);
+  });
+
+  // Demo controls: skip the real wait to show either outcome live
+  simConfirm.addEventListener('click', () => resolveAddress('confirmed'));
+  simTimeout.addEventListener('click', () => resolveAddress('timeout'));
+
+  $('form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (submitBtn.disabled) return;
+    if (addrState === 'unsent'){
+      startAddressWait(); // crear comanda dispara el envío de confirmación y bloquea el botón hasta que responda o se agote el tiempo
+      return;
+    }
+    finalizeCreate();
+  });
+
+  refreshStatus();
+})();
+</script>
